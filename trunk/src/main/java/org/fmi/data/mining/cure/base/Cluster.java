@@ -1,8 +1,11 @@
 package org.fmi.data.mining.cure.base;
 
+import java.awt.Point;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Vector;
 
 import org.fmi.data.mining.cure.helpers.Number;
 
@@ -128,7 +131,17 @@ public class Cluster<T extends Number> implements Iterable<Point<T>>{
 	 */
 	public Cluster<T> moveCluster(T alpha) {
 		//TODO:Georgi - use Point.move and Cluster.findCentroid
-		return null;
+		Cluster<T> newCluster = new Cluster<T>();
+		for(Iterator<Point<T>> itr = this.iterator(); itr.hasNext(); ) {
+			Point<T> pt = itr.next();
+			int dim = pt.getDimension();
+			Vector<T> moveVector = new Vector<T>();
+			for(int i; i < dim; i++) {
+				
+			}
+			newCluster.addPoint();
+		}
+		return newCluster;
 	}
 	
 	/**
