@@ -1,5 +1,6 @@
 package org.fmi.data.mining.cure.base;
 
+import java.util.Iterator;
 import java.util.Vector;
 
 import org.fmi.data.mining.cure.helpers.Number;
@@ -111,12 +112,17 @@ public class Point<T extends Number> {
 	 * 			New point with moved coordinates,
 	 */
 	@SuppressWarnings("unchecked")
-	public Point<T> move(T value) {
-		Vector<T> newCoordinates = new Vector<T>();
-		for(T coordinate : this.coordinates) {
-			newCoordinates.add((T) coordinate.plus(value));
+	public Point<T> move(Vector<T> values) {
+		if(values.size() != this.getDimension()) {
+			//throw exception or something
+			return null;
 		}
-		return new Point<T>(coordinates);
+		Vector<T> newCoordinates = new Vector<T>();
+		Iterator<T> itr = values.iterator();
+		for(T coordinate : this.coordinates) {
+			newCoordinates.add((T) coordinate.plus(itr.next()));
+		}
+		return new Point<T>(newCoordinates);
 	}
 	
 	@SuppressWarnings("unchecked")
