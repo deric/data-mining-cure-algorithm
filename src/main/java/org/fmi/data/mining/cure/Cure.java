@@ -11,30 +11,30 @@ import org.fmi.data.mining.cure.helpers.DoubleNum;
 
 public class Cure {
 	
-	public static void cureAlgor(double alphaN,int k, Set<Point<DoubleNum>> points) {
-		DoubleNum alpha = new DoubleNum(alphaN);
+	public static void cureAlgor(double alphaN,int k, Set<Point> points) {
+		double alpha = alphaN;
 		//init clusters
-		List<Cluster<DoubleNum>> originalClusters = new ArrayList<Cluster<DoubleNum>>();
-		for (Point<DoubleNum> point : points) {
-			originalClusters.add(new Cluster<DoubleNum>(point));
+		List<Cluster> originalClusters = new ArrayList<Cluster>();
+		for (Point point : points) {
+			originalClusters.add(new Cluster(point));
 		}
 		//find the pair min clusters
 		Integer firstCluster = 0;
 		Integer secondCluster = 0;
 		findMinDistClusters(originalClusters, firstCluster, secondCluster);
-		Cluster<DoubleNum> Ck = originalClusters.get(firstCluster);
-		Cluster<DoubleNum> Cl = originalClusters.get(secondCluster);
+		Cluster Ck = originalClusters.get(firstCluster);
+		Cluster Cl = originalClusters.get(secondCluster);
 		//merge clusters
-		Cluster<DoubleNum> Cm = Ck.merge(Cl);
+		Cluster Cm = Ck.merge(Cl);
 		originalClusters.set(firstCluster, Cm);
 		originalClusters.remove(secondCluster);
 		while(originalClusters.size() > k) {
 			//representatives
-			Cluster<DoubleNum> representatives = Cm.findRepresentatives();
+			Cluster representatives = Cm.findRepresentatives();
 			//move cluster
-			Cluster<DoubleNum> movedRepresentatives = representatives.moveCluster(alpha);
+			Cluster movedRepresentatives = representatives.moveCluster(alpha);
 			//find min clusters
-			List<Cluster<DoubleNum>> allClusterRepresentatives = new ArrayList<Cluster<DoubleNum>>();
+			List<Cluster> allClusterRepresentatives = new ArrayList<Cluster>();
 			for (int i = 0; i < originalClusters.size(); ++i) {
 				if (i != firstCluster) {
 					allClusterRepresentatives.add(originalClusters.get(i).findRepresentatives());
@@ -46,28 +46,27 @@ public class Cure {
 		}
 	}
 
-	private static int findMinDistCluster(List<Cluster<DoubleNum>> clusters, Cluster<DoubleNum> cluster) {
-		DoubleNum minDistance = null;
+	private static int findMinDistCluster(List<Cluster> clusters, Cluster cluster) {
+		double minDistance = Double.POSITIVE_INFINITY;
 		int min = -1;
 		for (int i = 0; i < clusters.size(); ++ i) {
-			Cluster<DoubleNum> cl = clusters.get(i);
-				DoubleNum distance = 
-					cl.distance(cluster);
-				if (minDistance == null || (minDistance.isGreaterThan(distance))) {
+			Cluster cl = clusters.get(i);
+				double distance = cl.distance(cluster);
+				if (minDistance > distance) {
 					min = i;
 					minDistance = distance;
 				}
 		}
 		return min;
 	}
-	private static void findMinDistClusters(List<Cluster<DoubleNum>> clusters,
+	private static void findMinDistClusters(List<Cluster> clusters,
 			Integer firstCluster, Integer secondCluster) {
-		DoubleNum minDistance = null;
+		double minDistance = Double.POSITIVE_INFINITY;
 		for(int i = 0; i < clusters.size(); ++ i) {
 			for(int j = i + 1; j < clusters.size(); ++ j) {
-				DoubleNum distance = 
+				double distance = 
 					clusters.get(i).distance(clusters.get(j));
-				if (minDistance == null || (minDistance.isGreaterThan(distance))) {
+				if (minDistance > distance) {
 					firstCluster = new Integer(i);
 					secondCluster = new Integer(j);
 					minDistance = distance;
@@ -77,10 +76,10 @@ public class Cure {
 	}
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-		Set<Point<DoubleNum>> points = new HashSet<Point<DoubleNum>>();
+		Set<Point> points = new HashSet<Point>();
 		//init points
 		//......
-		cureAlgor(alphaN,k, points);
+		//cureAlgor(alphaN,k, points);
 			
 	}
 }
