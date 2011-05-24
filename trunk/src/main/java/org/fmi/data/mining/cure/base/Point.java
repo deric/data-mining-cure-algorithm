@@ -13,12 +13,12 @@ import org.fmi.data.mining.cure.helpers.Number;
  * @param <T>
  * 				The type of the points.
  */
-public class Point<T extends Number> {
+public class Point {
 
 	/**
 	 * The coordinates of the point.
 	 */
-	private Vector<T> coordinates;
+	private Vector<Double> coordinates;
 	
 	/**
 	 * Constructs a point with given coordinates.
@@ -26,9 +26,9 @@ public class Point<T extends Number> {
 	 * @param coordinates
 	 * 					The coordinates of the point.
 	 */
-	public Point(T...coordinates) {
-		this.coordinates = new Vector<T>();
-		for(T coordinate : coordinates) {
+	public Point(Double...coordinates) {
+		this.coordinates = new Vector<Double>();
+		for(Double coordinate : coordinates) {
 			this.coordinates.add(coordinate);
 		}
 	}
@@ -39,8 +39,8 @@ public class Point<T extends Number> {
 	 * @param coordinates
 	 * 					The coordinates of the point.
 	 */
-	public Point(Vector<T> coordinates) {
-		this.coordinates = new Vector<T>(coordinates);
+	public Point(Vector<Double> coordinates) {
+		this.coordinates = new Vector<Double>(coordinates);
 	}
 	
 	/**
@@ -61,7 +61,7 @@ public class Point<T extends Number> {
 	 * @param value
 	 * 				The new value of the coordinate.
 	 */
-	public void setCoordinate(int place, T value) {
+	public void setCoordinate(int place, double value) {
 		if (place >= 0 && place < getDimension()) {
 			this.coordinates.set(place, value);
 		}
@@ -75,7 +75,7 @@ public class Point<T extends Number> {
 	 * @return
 	 * 				The coordinate.
 	 */
-	public T getCoordinate(int place) {
+	public Double getCoordinate(int place) {
 		if (place >= 0 && place < getDimension()) {
 			return this.coordinates.get(place);
 		}
@@ -90,42 +90,62 @@ public class Point<T extends Number> {
 	 * @return
 	 * 					The distance between the current and the other point.
 	 */
-	@SuppressWarnings("unchecked")
-	public T distance(Point<T> otherPoint) {
+
+	public double distance(Point otherPoint) {
+		return euclideanDistance(otherPoint);
+
+	}
+	
+	private double euclideanDistance(Point otherPoint) {
 		if (getDimension() != otherPoint.getDimension()) {
-			return null;
+			return Double.NaN; //throw exception...
 		}
-		T result = null;
-		for(int i = 0; i < getDimension(); ++i) {
-			result = (T) result.plus(getCoordinate(i).
-					mult(otherPoint.getCoordinate(i)));
+		double sum = 0;
+		int dimension = getDimension();
+		for(int i = 0; i < dimension; ++i) {
+			sum += Math.pow(getCoordinate(i) - otherPoint.getCoordinate(i), 2);
 		}
-		return (T) (result == null ? null : result.sqrt());
+		return Math.sqrt(sum);
+	}
+	
+	public Vector<Double> directionTo(Point otherPoint) {
+		if (getDimension() != otherPoint.getDimension()) {
+			return null; //throw exception...
+		}
+		
+		Vector<Double> result = new Vector<Double>();
+		
+		double euclDist = euclideanDistance(otherPoint);
+		int dimension = getDimension();
+		for(int i = 0; i < dimension; i++) {
+			result.add((otherPoint.getCoordinate(i) - getCoordinate(i)) / euclDist);
+		}
+		
+		return result;
 	}
 	
 	/**
 	 * Moves the point with value param.
 	 * 
-	 * @param value
-	 * 			The parameter with which the point will be moved.
+	 * @param moveVector
+	 * 			vector showing the direction and distnace the point will be moved by
 	 * @return
 	 * 			New point with moved coordinates,
 	 */
-	@SuppressWarnings("unchecked")
-	public Point<T> move(Vector<T> values) {
-		if(values.size() != this.getDimension()) {
+
+	public Point move(Vector<Double> moveVector) {
+		if(moveVector.size() != this.getDimension()) {
 			//throw exception or something
 			return null;
 		}
-		Vector<T> newCoordinates = new Vector<T>();
-		Iterator<T> itr = values.iterator();
-		for(T coordinate : this.coordinates) {
-			newCoordinates.add((T) coordinate.plus(itr.next()));
+		Vector<Double> newCoordinates = new Vector<Double>();
+		int dimension = getDimension();
+		for(int i = 0; i < dimension; i++) {
+			newCoordinates.add(getCoordinate(i) + moveVector.get(i));
 		}
-		return new Point<T>(newCoordinates);
+		return new Point(newCoordinates);
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null) {
@@ -134,7 +154,7 @@ public class Point<T extends Number> {
 		if (! (obj instanceof Point)) {
 			return false;
 		}
-		Point<T> point = (Point<T>) obj;
+		Point point = (Point) obj;
 		if (point.getDimension() != getDimension()) {
 			return false;
 		}

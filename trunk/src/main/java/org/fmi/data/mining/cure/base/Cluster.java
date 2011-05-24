@@ -1,13 +1,10 @@
 package org.fmi.data.mining.cure.base;
 
-import java.awt.Point;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
-import org.fmi.data.mining.cure.helpers.Number;
 
 /**
  *	Represents the idea of the cluster in the algorithm.
@@ -17,12 +14,12 @@ import org.fmi.data.mining.cure.helpers.Number;
  * @param <T>
  * The type of the points given.
  */
-public class Cluster<T extends Number> implements Iterable<Point<T>>{
+public class Cluster implements Iterable<Point>{
 
 	/**
 	 * The points in the cluster.
 	 */
-	private Set<Point<T>> points;
+	private Set<Point> points;
 	
 	/**
 	 * Constructor of the class.
@@ -30,9 +27,9 @@ public class Cluster<T extends Number> implements Iterable<Point<T>>{
 	 * @param points
 	 * 				The points in the cluster.
 	 */
-	public Cluster(Point<T>...points) {
-		this.points = new HashSet<Point<T>>();
-		for (Point<T> point : points) {
+	public Cluster(Point...points) {
+		this.points = new HashSet<Point>();
+		for (Point point : points) {
 			this.points.add(point);
 		}
 	}
@@ -43,12 +40,12 @@ public class Cluster<T extends Number> implements Iterable<Point<T>>{
 	 * @param points
 	 * 				The points in the cluster.
 	 */
-	public Cluster(Set<Point<T>> points) {
-		this.points = new HashSet<Point<T>>(points);
+	public Cluster(Set<Point> points) {
+		this.points = new HashSet<Point>(points);
 	}
 	
 	@Override
-	public Iterator<Point<T>> iterator() {
+	public Iterator<Point> iterator() {
 		return points.iterator();
 	}
 	
@@ -68,7 +65,7 @@ public class Cluster<T extends Number> implements Iterable<Point<T>>{
 	 * @param point
 	 * 				The point to be addes.
 	 */
-	public void addPoint(Point<T> point) {
+	public void addPoint(Point point) {
 		this.points.add(point);
 	}
 	
@@ -81,17 +78,13 @@ public class Cluster<T extends Number> implements Iterable<Point<T>>{
 	 * 					The distance between the clusters.
 	 */
 	//very dummy!!!!!!!!!!!!!!!!
-	public T distance(Cluster<T> cluster) {
-		T min = null;
-		for (Point<T> point1 : cluster) {
-			for (Point<T> point2 : this) {
-				T distance = point1.distance(point2);
-				if (min == null) {
+	public double distance(Cluster cluster) {
+		double min = Double.POSITIVE_INFINITY;
+		for (Point point1 : cluster) {
+			for (Point point2 : this) {
+				double distance = point1.distance(point2);
+				if (min > distance) {
 					min = distance;
-				} else {
-					if (min.isGreaterThan(distance)) {
-						min = distance;
-					}
 				}
 			}
 		}
@@ -104,7 +97,7 @@ public class Cluster<T extends Number> implements Iterable<Point<T>>{
 	 * @return
 	 * 			The centroid of the cluster.
 	 */
-	private Point<T> findCentroid() {
+	private Point findCentroid() {
 		//TODO:Svetlio
 		return null;
 	}
@@ -116,7 +109,7 @@ public class Cluster<T extends Number> implements Iterable<Point<T>>{
 	 * 			A new cluster consisting of the 
 	 * 			representatives of the current one.
 	 */
-	public Cluster<T> findRepresentatives() {
+	public Cluster findRepresentatives() {
 		//TODO: Svetlio
 		return null;
 	}
@@ -129,17 +122,19 @@ public class Cluster<T extends Number> implements Iterable<Point<T>>{
 	 * @return
 	 * 			Another cluster, with points that are moved with alpha/
 	 */
-	public Cluster<T> moveCluster(T alpha) {
-		//TODO:Georgi - use Point.move and Cluster.findCentroid
-		Cluster<T> newCluster = new Cluster<T>();
-		for(Iterator<Point<T>> itr = this.iterator(); itr.hasNext(); ) {
-			Point<T> pt = itr.next();
+	public Cluster moveCluster(double alpha) {
+		Point centroid = findCentroid();
+		Cluster newCluster = new Cluster();
+		for(Iterator<Point> itr = this.iterator(); itr.hasNext(); ) {
+			Point pt = itr.next();
 			int dim = pt.getDimension();
-			Vector<T> moveVector = new Vector<T>();
-			for(int i; i < dim; i++) {
-				
+			Vector<Double> dirToCent = pt.directionTo(centroid);
+			double distToCentr = pt.distance(centroid);
+			Vector<Double> moveVector = new Vector<Double>(); 
+			for(int i = 0; i < dim; i++) {
+				moveVector.add(distToCentr * alpha * dirToCent.get(i));
 			}
-			newCluster.addPoint();
+			newCluster.addPoint(pt.move(moveVector));
 		}
 		return newCluster;
 	}
@@ -153,14 +148,13 @@ public class Cluster<T extends Number> implements Iterable<Point<T>>{
 	 * 					New cluster consisting of all the points
 	 * 					in the current cluster plus the ones in the other cluster.
 	 */
-	public Cluster<T> merge(Cluster<T> cluster) {
-		Set<Point<T>> mergedPoints = new HashSet<Point<T>>();
+	public Cluster merge(Cluster cluster) {
+		Set<Point> mergedPoints = new HashSet<Point>();
 		mergedPoints.addAll(cluster.points);
 		mergedPoints.addAll(this.points);
-		return new Cluster<T>(mergedPoints);
+		return new Cluster(mergedPoints);
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null) {
@@ -169,7 +163,7 @@ public class Cluster<T extends Number> implements Iterable<Point<T>>{
 		if (! (obj instanceof Cluster)) {
 			return false;
 		}
-		Cluster<T> cluster = (Cluster<T>) obj;
+		Cluster cluster = (Cluster) obj;
 		return this.points.equals(cluster.points);
 	}
 }
