@@ -1,6 +1,7 @@
 package org.fmi.data.mining.cure.base;
 
 import java.util.Iterator;
+import java.util.Set;
 import java.util.Vector;
 
 import org.fmi.data.mining.cure.helpers.Number;
@@ -80,6 +81,50 @@ public class Point {
 			return this.coordinates.get(place);
 		}
 		return null;
+	}
+	
+	/**
+	 * Gets the coordinates of the point
+	 * 
+	 * @return
+	 * 				The coordinates.
+	 */
+//	public Vector<Double> getCoordinates() {
+//		return coordinates;
+//	}
+	
+	/**
+	 * Sets the coordinates of the point
+	 * 
+	 * @param place
+	 * 				The specified coordinates. 
+	 * @return
+	 * 				void.
+	 */
+//	public void setCoordinates(Vector<Double> value) {
+//		coordinates = value;
+//	}
+	
+	public void calculateAsMeanOf(Set<Point> points)
+	{
+		for (Point point : points) {
+			if (this.coordinates == null)
+			{
+				this.coordinates = (Vector<Double>) point.coordinates.clone();
+			}
+			else
+			{
+				for(int i = 0; i < point.coordinates.size(); i++) 
+				{
+					double coordinate = point.getCoordinate(i);
+					this.setCoordinate(i, point.coordinates.get(i) + coordinate);
+				}
+			}
+		}
+		for(int i = 0; i < this.coordinates.size(); i++) 
+		{
+			this.setCoordinate(i, this.coordinates.get(i)/points.size());
+		}
 	}
 	
 	/**

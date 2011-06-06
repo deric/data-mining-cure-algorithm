@@ -98,8 +98,27 @@ public class Cluster implements Iterable<Point>{
 	 * 			The centroid of the cluster.
 	 */
 	private Point findCentroid() {
-		//TODO:Svetlio
-		return null;
+		Point result = new Point();
+//		for (Point point : this) {
+//			if (result.getCoordinates() == null)
+//			{
+//				result.setCoordinates((Vector<Double>) point.getCoordinates().clone());
+//			}
+//			else
+//			{
+//				for(int i = 0; i < point.getCoordinates().size(); i++) 
+//				{
+//					double coordinate = point.getCoordinate(i);
+//					result.setCoordinate(i, point.getCoordinate(i) + coordinate);
+//				}
+//			}
+//		}
+//		for(int i = 0; i < result.getCoordinates().size(); i++) 
+//		{
+//			result.setCoordinate(i, result.getCoordinate(i)/this.getSize());
+//		}
+		result.calculateAsMeanOf(points);
+		return result;
 	}
 	
 	/**
