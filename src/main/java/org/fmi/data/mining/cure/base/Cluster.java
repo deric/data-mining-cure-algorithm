@@ -67,6 +67,8 @@ public class Cluster implements Iterable<Point>{
 	 */
 	public void addPoint(Point point) {
 		this.points.add(point);
+		
+		centroidDirty = true;
 	}
 	
 	/**
@@ -92,12 +94,24 @@ public class Cluster implements Iterable<Point>{
 	}
 	
 	/**
+	 * shows if the centroid needs to be recalculated
+	 */
+	private boolean centroidDirty = true;
+	/**
+	 * holds the centroid point
+	 */
+	private Point centroid;
+	/**
 	 * Finds the centroid of the cluster.
 	 * 
 	 * @return
 	 * 			The centroid of the cluster.
 	 */
 	private Point findCentroid() {
+		
+		if (!centroidDirty)
+			return centroid;
+		
 		Point result = new Point();
 //		for (Point point : this) {
 //			if (result.getCoordinates() == null)
@@ -118,19 +132,69 @@ public class Cluster implements Iterable<Point>{
 //			result.setCoordinate(i, result.getCoordinate(i)/this.getSize());
 //		}
 		result.calculateAsMeanOf(points);
+		centroid = result;
 		return result;
 	}
 	
+	private double representativesPercent = 5;
 	/**
-	 * Finds the representatives of the cluster.
+	 * Finds the representative points of the cluster.
 	 * 
 	 * @return
 	 * 			A new cluster consisting of the 
 	 * 			representatives of the current one.
 	 */
 	public Cluster findRepresentatives() {
-		//TODO: Svetlio
-		return null;
+		int representativesCount = (int) (this.getSize()*representativesPercent/100);
+		representativesCount = (representativesCount > 1) ? representativesCount : 1;
+		
+		Cluster result = new Cluster();
+		
+		findCentroid();
+		Point point = findTheMostDistantPointFrom(centroid, this, result);
+		result.addPoint(point);
+		while (result.points.size() < representativesCount)
+		{
+			point = findTheMostDistantPointFrom(point, this, result);
+			result.addPoint(point);
+		}
+		return result;
+	}
+	
+	/**
+	 * Finds the the most distant point from a cluster
+	 * to a given point. And excludes the points which
+	 * are present in the second cluster
+	 * 
+	 * @param point
+	 * 				The seed point
+	 * @param inCluster
+	 * 					The other cluster to search from
+	 * @param notInCluster
+	 * 					The exclusive cluster which 
+	 * 					contains the points which we should 
+	 * 					avoid
+	 * @return
+	 * 			A point which is most distant from 
+	 * 			the seed point
+	 */
+	public Point findTheMostDistantPointFrom(Point point, Cluster inCluster, Cluster notInCluster) 
+	{
+		Point result = point;
+		double distance;
+		double maxDistance = 0;
+		for (Point testPoint : inCluster)
+		{
+			if (!notInCluster.points.contains(testPoint))
+			{
+				distance = testPoint.distance(point);
+				if (distance > maxDistance)
+				{
+					result = testPoint;
+				}
+			}
+		}
+		return result;
 	}
 	
 	/**
@@ -142,7 +206,7 @@ public class Cluster implements Iterable<Point>{
 	 * 			Another cluster, with points that are moved with alpha/
 	 */
 	public Cluster moveCluster(double alpha) {
-		Point centroid = findCentroid();
+		findCentroid();
 		Cluster newCluster = new Cluster();
 		for(Iterator<Point> itr = this.iterator(); itr.hasNext(); ) {
 			Point pt = itr.next();
