@@ -269,12 +269,13 @@ public class Cluster implements Serializable{
 //	}
 	
 	private Instances getColRepPoints() {
-		if(colRepPoints != null) return colRepPoints;
+//		if(colRepPoints != null) return colRepPoints;
 		
-		colRepPoints = new Instances(repPoints);
 		
 		Instances repPoints = getRepPoints();
 		Instance centroid = findCentroid();
+		
+		colRepPoints = new Instances(repPoints);
 		
 		for(int i = 0; i < repPoints.numInstances(); i++) {
 			Instance curInstance = colRepPoints.get(i);
