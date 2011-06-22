@@ -201,7 +201,11 @@ public class Cluster implements Serializable{
 					maxDistance = curDistance;
 				}
 			}
-			repPoints.set(i, points.get(distInstanceInd));
+			if(repPoints.size() <= i) {
+				repPoints.add(i, points.get(distInstanceInd));
+			} else {
+				repPoints.set(i, points.get(distInstanceInd));
+			}
 			usedInd.add(distInstanceInd);
 			prevPoint = points.get(distInstanceInd);
 		}
