@@ -70,7 +70,8 @@ public class Cluster implements Serializable{
 	 * @param points
 	 * 				The points in the cluster.
 	 */
-	public Cluster(Instances points, int repPointNum, double alpha) {
+	public Cluster(Instances points, int repPointNum, double alpha, Instances in) {
+		this.distanceFunction.setInstances(in);
 		this.repPointNum = repPointNum;
 		this.alpha = alpha;
 		this.points = new Instances(points);
@@ -303,7 +304,7 @@ public class Cluster implements Serializable{
 	public Cluster merge(Cluster cluster) {
 		Instances mergedInstances = new Instances(points);
 		mergedInstances.addAll(cluster.points);
-		Cluster newCluster = new Cluster(mergedInstances, repPointNum, alpha);
+		Cluster newCluster = new Cluster(mergedInstances, repPointNum, alpha, distanceFunction.getInstances());
 		
 		return newCluster;
 	}
