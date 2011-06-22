@@ -117,7 +117,7 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 			int mergeInd1 = 0;
 			int mergeInd2 = 0;
 			
-			for(int i = 0; i < clusters.size() - 1; i++) {
+			for(int i = 0; i < clusters.size(); i++) {
 				for(int j = i + 1; j < clusters.size(); j++) {
 					System.out.println("i: " + i + " " + clusters.get(i));
 					System.out.println("j: " + j + " " + clusters.get(j));
@@ -131,7 +131,7 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 			}
 			
 			Cluster cl1 = clusters.remove(mergeInd1);
-			Cluster cl2 = clusters.remove(mergeInd2);
+			Cluster cl2 = clusters.remove(mergeInd2 - 1);
 			Cluster mcl = cl1.merge(cl2);
 			clusters.add(mcl);
 		}
