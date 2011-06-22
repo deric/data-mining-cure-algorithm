@@ -37,11 +37,13 @@ public class Cluster implements Serializable{
 	/**
 	 * The points in the cluster.
 	 */
-	private Instances points;
+	private Instances points = null;
 	
-//	private Instances repPoints;
-//	
-//	private Instances colRepPoints;
+	private Instances repPoints = null;
+	
+	private Instances colRepPoints = null;
+	
+	private Instance centroid = null;
 	
 	public Cluster getLeftChild() {
 		return leftParent;
@@ -76,7 +78,6 @@ public class Cluster implements Serializable{
 		this.repPointNum = repPointNum;
 		this.alpha = alpha;
 		this.points = new Instances(points);
-//		repPoints = new Instances(points, repPointNum);
 	}
 	
 //	@Override
@@ -136,19 +137,15 @@ public class Cluster implements Serializable{
 	
 
 	/**
-	 * holds the centroid point
-	 */
-	private Instance centroid = null;
-	/**
 	 * Finds the centroid of the cluster.
 	 * 
 	 * @return
 	 * 			The centroid of the cluster.
 	 */
 	private Instance findCentroid() {
-		double [] attrs = new double[points.numAttributes()];
+		if(centroid != null) return centroid;
 		
-		if (centroid != null) return centroid;
+		double [] attrs = new double[points.numAttributes()];
 		
 		for(int i = 0; i < points.numAttributes(); i++) {
 			attrs[i] = points.meanOrMode(i);
@@ -184,9 +181,9 @@ public class Cluster implements Serializable{
 //	}
 	
 	private Instances getRepPoints() {
-		//if(repPoints != null) return repPoints;
+		if(repPoints != null) return repPoints;
 
-		Instances repPoints = new Instances(points);
+		repPoints = new Instances(points);
 		
 		Instance prevPoint = findCentroid();
 		Set<Integer> usedInd = new HashSet<Integer>();
@@ -275,13 +272,13 @@ public class Cluster implements Serializable{
 //	}
 	
 	private Instances getColRepPoints() {
-//		if(colRepPoints != null) return colRepPoints;
+		if(colRepPoints != null) return colRepPoints;
 		
 		
 		Instances repPoints = getRepPoints();
 		Instance centroid = findCentroid();
 		
-		Instances colRepPoints = new Instances(repPoints);
+		colRepPoints = new Instances(repPoints);
 		
 		for(int i = 0; i < repPoints.numInstances(); i++) {
 			Instance curInstance = colRepPoints.get(i);
