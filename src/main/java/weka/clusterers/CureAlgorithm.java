@@ -14,8 +14,6 @@ import weka.core.RevisionUtils;
 import weka.core.Utils;
 import weka.core.WeightedInstancesHandler;
 import weka.core.Capabilities.Capability;
-import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.ReplaceMissingValues;
 
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -47,8 +45,6 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 
 	/** the distance function used. */
 	protected DistanceFunction m_DistanceFunction = new EuclideanDistance();
-
-	private ReplaceMissingValues m_ReplaceMissingFilter;
 	
 	private List<Cluster> clusters = new Vector<Cluster>(); 
 	
@@ -90,22 +86,13 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	public void buildClusterer(Instances data) throws Exception {
 		getCapabilities().testWithFail(data);
 		
-		 m_instances = data;
-		    int nInstances = m_instances.numInstances();
-		    if (nInstances == 0) {
-		      return;
-		    }
-		    m_DistanceFunction.setInstances(m_instances);
+		m_instances = data;
+	    int nInstances = m_instances.numInstances();
+	    if (nInstances == 0) {
+	      return;
+	    }
+	    m_DistanceFunction.setInstances(m_instances);
 		
-
-		m_ReplaceMissingFilter = new ReplaceMissingValues();
-		Instances instances = new Instances(data);
-
-		instances.setClassIndex(-1);
-		m_ReplaceMissingFilter.setInputFormat(instances);
-		instances = Filter.useFilter(instances, m_ReplaceMissingFilter);
-
-		data = instances;
 		
 		for(int i = 0; i < data.numInstances(); i++) {
 			Instances instance = new Instances(data, i, 1);
@@ -150,13 +137,8 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	@Override
 	public int clusterInstance(Instance instance) throws Exception {
 
-		ReplaceMissingValues m_ReplaceMissingFilter = new ReplaceMissingValues();
-		m_ReplaceMissingFilter.input(instance);
-		m_ReplaceMissingFilter.batchFinished();
-		Instance inst = m_ReplaceMissingFilter.output();
-
 		for(int i = 0; i < clusters.size(); i++) {
-			if(clusters.get(i).contains(inst)) return i;
+			if(clusters.get(i).contains(instance)) return i;
 		}
 		
 		Exception up = new Exception("Cannot");
