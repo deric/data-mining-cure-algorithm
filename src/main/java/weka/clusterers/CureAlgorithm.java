@@ -107,7 +107,7 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 
 		for(int i = 0; i < data.numInstances(); i++) {
 			Instances instance = new Instances(data, i, 1);
-			clusters.add(new Cluster(instance, m_RepObj, m_ColFactor));
+			clusters.add(new Cluster(instance, m_RepObj, m_ColFactor, m_DistanceFunction.getInstances()));
 		}
 		
 		for(;m_NumClusters < clusters.size();) {
