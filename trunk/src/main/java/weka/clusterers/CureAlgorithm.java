@@ -354,6 +354,8 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	  }
 	  returnString += clusters.get(i).toString();
 	  
+	  returnString += "\n\n";
+	  
 	  return returnString; 
   }
 
