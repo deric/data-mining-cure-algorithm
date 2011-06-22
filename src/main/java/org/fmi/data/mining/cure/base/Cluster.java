@@ -303,7 +303,7 @@ public class Cluster{
 		return newCluster;
 	}
 	
-	public boolean Contains(Instance inst) {		
+	public boolean contains(Instance inst) {		
 		for(int i = 0; i < points.numInstances(); i++) {
 			if(distanceFunction.distance(points.instance(i), inst) == 0) return true;			
 		}
