@@ -95,6 +95,31 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 		m_ReplaceMissingFilter.setInputFormat(instances);
 		instances = Filter.useFilter(instances, m_ReplaceMissingFilter);
 
+		for(int i = 0; i < data.numInstances(); i++) {
+			clusters.add(new Cluster(new Instances(data, i, i), m_RepObj, m_ColFactor));
+		}
+		
+		for(;m_NumClusters < clusters.size();) {
+			double min = Double.POSITIVE_INFINITY;
+			int mergeInd1 = 0;
+			int mergeInd2 = 0;
+			
+			for(int i = 0; i < clusters.size(); i++) {
+				for(int j = i + 1; j < clusters.size(); j++) {
+					double dist = clusters.get(i).distance(clusters.get(j));
+					if(dist < min) {
+						mergeInd1 = i;
+						mergeInd2 = j;
+						min = dist;
+					}
+				}
+			}
+			
+			Cluster cl1 = clusters.remove(mergeInd1);
+			Cluster cl2 = clusters.remove(mergeInd2);
+			Cluster mcl = cl1.merge(cl2);
+			clusters.add(mcl);
+		}
 	}
 
 
@@ -115,8 +140,11 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 		m_ReplaceMissingFilter.batchFinished();
 		Instance inst = m_ReplaceMissingFilter.output();
 
-
-		return 0;
+		for(int i = 0; i < clusters.size(); i++) {
+			if(clusters.get(i).contains(instance)) return i;
+		}
+		
+		throw new Exception("Cannot");
 	}
 
 	/**
@@ -320,25 +348,15 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
    */
   public String toString()
   {
-	  return testString + "kur";
-
-	  //        String resultString = new String();
-	  //        resultString = resultString.concat("Number of clusters: ");
-	  //        resultString = resultString.concat(m_NumClusters + "\n");
-	  //        resultString = resultString.concat("\n Cluster centroids:\n");
-	  //        for (int i = 0; i < m_NumClusters; ++i){
-	  //            
-	  //        }
-	  //        resultString = resultString.concat("\nCluster errors:\n");
-	  //        for (int i = 0; i < m_NumClusters; ++i){
-	  //        	
-	  //        }
-	  //        resultString = resultString.concat("\n");
-	  //        for (int i = 0; i < m_NumClusters; i++){
-	  //        	
-	  //        }
-	  //        resultString = resultString.concat("\n");
-	  //        return resultString;
+	  String returnString = "";
+	  
+	  int i;
+	  for(i = 0; i < clusters.size() - 1; i++) {
+		  returnString += clusters.get(i).toString() + ",";
+	  }
+	  returnString += clusters.get(i).toString();
+	  
+	  return returnString; 
   }
 
   /**
