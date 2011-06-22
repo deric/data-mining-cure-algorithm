@@ -311,6 +311,9 @@ public class Cluster implements Serializable{
 		mergedInstances.addAll(cluster.points);
 		Cluster newCluster = new Cluster(mergedInstances, repPointNum, alpha, distanceFunction.getInstances(), distanceFunction);
 		
+		newCluster.leftParent = this;
+		newCluster.rightParent = cluster;
+		
 		return newCluster;
 	}
 	
