@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import weka.core.DenseInstance;
 import weka.core.DistanceFunction;
 import weka.core.EuclideanDistance;
 import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.SparseInstance;
 
 
 /**
@@ -151,7 +151,7 @@ public class Cluster implements Serializable{
 		for(int i = 0; i < points.numAttributes(); i++) {
 			attrs[i] = points.meanOrMode(i);
 		}
-		centroid = new SparseInstance(1, attrs);
+		centroid = new DenseInstance(1, attrs);
 		centroid.setDataset(points);
 		
 		return centroid;
@@ -182,7 +182,7 @@ public class Cluster implements Serializable{
 //	}
 	
 	private Instances getRepPoints() {
-		if(repPoints != null) return repPoints;
+		//if(repPoints != null) return repPoints;
 
 		repPoints = new Instances(points, repPointNum);
 		
