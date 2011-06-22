@@ -159,7 +159,8 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 			if(clusters.get(i).contains(inst)) return i;
 		}
 		
-		throw new Exception("Cannot");
+		Exception up = new Exception("Cannot");
+		throw up;
 	}
 
 	/**
