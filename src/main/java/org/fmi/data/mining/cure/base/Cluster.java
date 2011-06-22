@@ -325,8 +325,13 @@ public class Cluster implements Serializable{
 		return false;
 	}
 	
-	public String toString() {
-		String returnString = "(";
+	public String toString(int depth) {
+		String returnString = "";
+		
+		for(int i = 0; i < depth; i++) {
+			returnString += "|--";
+		}
+		returnString += "|";
 		
 		centroid = findCentroid();
 		
@@ -334,10 +339,9 @@ public class Cluster implements Serializable{
 		for(i = 0; i < centroid.numAttributes() - 1; i++) {
 			returnString += centroid.value(i) + ",";
 		}
-		returnString += centroid.value(i);
-		if(leftParent != null) returnString += leftParent.toString();
-		if(rightParent != null) returnString += rightParent.toString();
-		returnString += ")";
+		returnString += centroid.value(i) + "\n";
+		if(leftParent != null) returnString += leftParent.toString(depth + 1);
+		if(rightParent != null) returnString += rightParent.toString(depth + 1);
 		
 		return returnString;
 	}
