@@ -40,6 +40,8 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	private int m_NumClusters = 2;
 
 	private int m_RepObj = 5;
+	
+	private Instances m_instances;
 
 	private double m_ColFactor = 0.1;
 
@@ -87,6 +89,14 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 
 	public void buildClusterer(Instances data) throws Exception {
 		getCapabilities().testWithFail(data);
+		
+		 m_instances = data;
+		    int nInstances = m_instances.numInstances();
+		    if (nInstances == 0) {
+		      return;
+		    }
+		    m_DistanceFunction.setInstances(m_instances);
+		
 
 		m_ReplaceMissingFilter = new ReplaceMissingValues();
 		Instances instances = new Instances(data);
