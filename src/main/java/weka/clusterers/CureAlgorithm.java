@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package weka.clusterers;
 
@@ -24,8 +20,11 @@ import weka.filters.unsupervised.attribute.ReplaceMissingValues;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.Vector;
+
+import org.fmi.data.mining.cure.base.Cluster;
 
 
 public class CureAlgorithm
@@ -44,14 +43,13 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 
 	private double m_ColFactor = 0.1;
 
-	/**
-	 * The number of instances in each cluster
-	 */
-	private int [] m_ClusterSizes;
-
 	/** the distance function used. */
 	protected DistanceFunction m_DistanceFunction = new EuclideanDistance();
 
+	private ReplaceMissingValues m_ReplaceMissingFilter;
+	
+	private List<Cluster> clusters = new Vector<Cluster>(); 
+	
 	/**
 	 * the default constructor
 	 */
@@ -90,13 +88,12 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	public void buildClusterer(Instances data) throws Exception {
 		getCapabilities().testWithFail(data);
 
-		ReplaceMissingValues m_ReplaceMissingFilter = new ReplaceMissingValues();
+		m_ReplaceMissingFilter = new ReplaceMissingValues();
 		Instances instances = new Instances(data);
 
 		instances.setClassIndex(-1);
 		m_ReplaceMissingFilter.setInputFormat(instances);
 		instances = Filter.useFilter(instances, m_ReplaceMissingFilter);
-
 
 	}
 
@@ -112,6 +109,13 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	 */
 	@Override
 	public int clusterInstance(Instance instance) throws Exception {
+
+		ReplaceMissingValues m_ReplaceMissingFilter = new ReplaceMissingValues();
+		m_ReplaceMissingFilter.input(instance);
+		m_ReplaceMissingFilter.batchFinished();
+		Instance inst = m_ReplaceMissingFilter.output();
+
+
 		return 0;
 	}
 
@@ -224,76 +228,23 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
                                  + "\t(default 2).",
                                  "N", 1, "-N <num>"));
     result.addElement(new Option(
-                                 "\tReplace missing values with mean/mode.\n",
-                                 "M", 0, "-M"));
+                                 "\tNumber of representative objects.\n",
+                                 "R", 1, "-R"));
+    
+    result.addElement(new Option(
+            "\tCollapse factor.\n",
+            "C", 1, "-C"));
 
     result.add(new Option(
                           "\tDistance function to use.\n"
                           + "\t(default: weka.core.EuclideanDistance)",
                           "A", 1,"-A <classname and options>"));
 
-    result.add(new Option(
-                          "\tMaximum number of iterations.\n",
-                          "I",1,"-I <num>"));
-
-    result.addElement(new Option(
-                                 "\tNumber of executions of the K-means subalgorithm.\n",
-                                 "X", 1, "-X"));
-
-    result.addElement(new Option(
-                                 "\tWay to choose the cluster to split.\n",
-                                 "W", 1, "-W"));
-
 
     return  result.elements();
   }
+
   /**
-   * Parses a given list of options. <p/>
-   *
-   <!-- options-start -->
-   * Valid options are: <p/>
-   *
-   * <pre> -N &lt;num&gt;
-   *  number of clusters.
-   *  (default 2).
-   * </pre>
-   *
-   * <pre> -V
-   *  Display std. deviations for centroids.
-   * </pre>
-   *
-   * <pre> -M
-   *  Replace missing values with mean/mode.
-   * </pre>
-   *
-   * <pre> -S &lt;num&gt;
-   *  Random number seed.
-   *  (default 10)
-   * </pre>
-   *
-   * <pre> -A &lt;classname and options&gt;
-   *  Distance function to be used for instance comparison
-   *  (default weka.core.EuclidianDistance)
-   * </pre>
-   *
-   * <pre> -I &lt;num&gt;
-   *  Maximum number of iterations of the K-means subalgorithm.
-   * </pre>
-   *
-   * <pre> -O
-   *  Preserve order of instances.
-   * </pre>
-   *
-   * <pre> -X
-   *  Number of executions of the K-means subalgorithm at each splitting.
-   * </pre>
-   *
-   * <pre> -W
-   *  Way to choose the cluster to split.
-   * </pre>
-   *
-   <!-- options-end -->
-   *
    * @param options the list of options as an array of strings
    * @throws Exception if an option is not supported
    */
@@ -301,9 +252,18 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
     throws Exception {
 
     String optionString = Utils.getOption('N', options);
-
     if (optionString.length() != 0) {
       setNumClusters(Integer.parseInt(optionString));
+    }
+    
+    optionString = Utils.getOption("R", options);
+    if (optionString.length() != 0) {
+      setRepObj(Integer.parseInt(optionString));
+    }
+    
+    optionString = Utils.getOption("C", options);
+    if (optionString.length() != 0) {
+      setColFactor(Integer.parseInt(optionString));
     }
 
     String distFunctionClass = Utils.getOption('A', options);
@@ -340,6 +300,12 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
     result.add("-N");
     result.add("" + getNumClusters());
 
+    result.add("-R");
+    result.add("" + getRepObj());
+    
+    result.add("-C");
+    result.add("" + getColFactor());
+    
     result.add("-A");
     result.add((m_DistanceFunction.getClass().getName() + " " +
                 Utils.joinOptions(m_DistanceFunction.getOptions())).trim());
@@ -354,23 +320,25 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
    */
   public String toString()
   {
-        String resultString = new String();
-        resultString = resultString.concat("Number of clusters: ");
-        resultString = resultString.concat(m_NumClusters + "\n");
-        resultString = resultString.concat("\n Cluster centroids:\n");
-        for (int i = 0; i < m_NumClusters; ++i){
-            
-        }
-        resultString = resultString.concat("\nCluster errors:\n");
-        for (int i = 0; i < m_NumClusters; ++i){
-        	
-        }
-        resultString = resultString.concat("\n");
-        for (int i = 0; i < m_NumClusters; i++){
-        	
-        }
-        resultString = resultString.concat("\n");
-        return resultString;
+	  return testString + "kur";
+
+	  //        String resultString = new String();
+	  //        resultString = resultString.concat("Number of clusters: ");
+	  //        resultString = resultString.concat(m_NumClusters + "\n");
+	  //        resultString = resultString.concat("\n Cluster centroids:\n");
+	  //        for (int i = 0; i < m_NumClusters; ++i){
+	  //            
+	  //        }
+	  //        resultString = resultString.concat("\nCluster errors:\n");
+	  //        for (int i = 0; i < m_NumClusters; ++i){
+	  //        	
+	  //        }
+	  //        resultString = resultString.concat("\n");
+	  //        for (int i = 0; i < m_NumClusters; i++){
+	  //        	
+	  //        }
+	  //        resultString = resultString.concat("\n");
+	  //        return resultString;
   }
 
   /**
