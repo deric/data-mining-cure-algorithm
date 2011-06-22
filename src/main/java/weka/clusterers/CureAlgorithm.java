@@ -93,6 +93,7 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	    }
 	    m_DistanceFunction.setInstances(m_instances);
 		
+	    clusters.clear();
 		
 		for(int i = 0; i < data.numInstances(); i++) {
 			Instances instance = new Instances(data, i, 1);
