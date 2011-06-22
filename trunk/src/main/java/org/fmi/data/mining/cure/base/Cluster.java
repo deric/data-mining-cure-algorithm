@@ -1,9 +1,8 @@
 package org.fmi.data.mining.cure.base;
 
+import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.Vector;
 
 import weka.core.DistanceFunction;
 import weka.core.EuclideanDistance;
@@ -20,8 +19,12 @@ import weka.core.SparseInstance;
  * @param <T>
  * The type of the points given.
  */
-public class Cluster{
+public class Cluster implements Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private Cluster leftParent;
 	private Cluster rightParent;
 	
@@ -71,6 +74,7 @@ public class Cluster{
 		this.repPointNum = repPointNum;
 		this.alpha = alpha;
 		this.points = new Instances(points);
+		repPoints = new Instances(points, repPointNum);
 	}
 	
 //	@Override

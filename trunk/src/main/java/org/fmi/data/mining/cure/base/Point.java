@@ -1,10 +1,7 @@
 package org.fmi.data.mining.cure.base;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
-
-import org.fmi.data.mining.cure.helpers.Number;
 
 /**
  * Class representing the concept of the point in the mathematics.
