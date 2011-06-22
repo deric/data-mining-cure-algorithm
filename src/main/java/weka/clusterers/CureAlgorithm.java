@@ -29,122 +29,148 @@ import java.util.Vector;
 
 
 public class CureAlgorithm
-  extends AbstractClusterer 
-  implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler {
+extends AbstractClusterer 
+implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler {
 
-  /** for serialization */
-  static final long serialVersionUID = -3235809600124455376L;
+	/** for serialization */
+	static final long serialVersionUID = -3235809600124455376L;
 
-  /**
-   * number of clusters to generate
-   */
-  private int m_NumClusters = 2;
+	/**
+	 * number of clusters to generate
+	 */
+	private int m_NumClusters = 2;
 
+	private int m_RepObj = 5;
 
-  /**
-   * The number of instances in each cluster
-   */
-  private int [] m_ClusterSizes;
+	private double m_ColFactor = 0.1;
 
-  /** the distance function used. */
-  protected DistanceFunction m_DistanceFunction = new EuclideanDistance();
+	/**
+	 * The number of instances in each cluster
+	 */
+	private int [] m_ClusterSizes;
 
-  /**
-   * the default constructor
-   */
-  public CureAlgorithm() {
-    super();
+	/** the distance function used. */
+	protected DistanceFunction m_DistanceFunction = new EuclideanDistance();
 
-  }
+	/**
+	 * the default constructor
+	 */
+	public CureAlgorithm() {
+		super();
 
-  /**
-   * Returns a string describing this clusterer
-   * @return a description of the evaluator suitable for
-   * displaying in the explorer/experimenter gui
-   */
-  public String globalInfo() {
-    return "Cluster data using the CURE.";
-  }
+	}
 
-  /**
-   * Returns default capabilities of the clusterer.
-   *
-   * @return      the capabilities of this clusterer
-   */
-  public Capabilities getCapabilities() {
-    Capabilities result = super.getCapabilities();
-    result.disableAll();
-    result.enable(Capability.NO_CLASS);
+	/**
+	 * Returns a string describing this clusterer
+	 * @return a description of the evaluator suitable for
+	 * displaying in the explorer/experimenter gui
+	 */
+	public String globalInfo() {
+		return "Cluster data using the CURE.";
+	}
 
-    // attributes
-    result.enable(Capability.NOMINAL_ATTRIBUTES);
-    result.enable(Capability.NUMERIC_ATTRIBUTES);
-    result.enable(Capability.MISSING_VALUES);
+	/**
+	 * Returns default capabilities of the clusterer.
+	 *
+	 * @return      the capabilities of this clusterer
+	 */
+	public Capabilities getCapabilities() {
+		Capabilities result = super.getCapabilities();
+		result.disableAll();
+		result.enable(Capability.NO_CLASS);
 
-    return result;
-  }
+		// attributes
+		result.enable(Capability.NOMINAL_ATTRIBUTES);
+		result.enable(Capability.NUMERIC_ATTRIBUTES);
+		result.enable(Capability.MISSING_VALUES);
 
-  public void buildClusterer(Instances data) throws Exception {
-    getCapabilities().testWithFail(data);
+		return result;
+	}
 
-    ReplaceMissingValues m_ReplaceMissingFilter = new ReplaceMissingValues();
-    Instances instances = new Instances(data);
+	public void buildClusterer(Instances data) throws Exception {
+		getCapabilities().testWithFail(data);
 
-    instances.setClassIndex(-1);
-	m_ReplaceMissingFilter.setInputFormat(instances);
-	instances = Filter.useFilter(instances, m_ReplaceMissingFilter);
+		ReplaceMissingValues m_ReplaceMissingFilter = new ReplaceMissingValues();
+		Instances instances = new Instances(data);
 
-
-  }
-
-
-  /**
-   * Classifies a given instance.
-   *
-   * @param instance the instance to be assigned to a cluster
-   * @return the number of the assigned cluster as an interger
-   * if the class is enumerated, otherwise the predicted value
-   * @throws Exception if instance could not be classified
-   * successfully
-   */
-  @Override
-  public int clusterInstance(Instance instance) throws Exception {
-    return 0;
-  }
-
-  /**
-   * Returns the tip text for this property
-   * @return tip text for this property suitable for
-   * displaying in the explorer/experimenter gui
-   */
-  public String numClustersTipText() {
-    return "set number of clusters";
-  }
-
-  /**
-   * set the number of clusters to generate
-   *
-   * @param n the number of clusters to generate
-   * @throws Exception if number of clusters is negative
-   */
-  public void setNumClusters(int n) throws Exception {
-    if (n <= 0) {
-      throw new Exception("Number of clusters must be > 0");
-    }
-    m_NumClusters = n;
-  }
-
-  /**
-   * gets the number of clusters to generate
-   *
-   * @return the number of clusters to generate
-   */
-  public int getNumClusters() {
-    return m_NumClusters;
-  }
+		instances.setClassIndex(-1);
+		m_ReplaceMissingFilter.setInputFormat(instances);
+		instances = Filter.useFilter(instances, m_ReplaceMissingFilter);
 
 
-  /**
+	}
+
+
+	/**
+	 * Classifies a given instance.
+	 *
+	 * @param instance the instance to be assigned to a cluster
+	 * @return the number of the assigned cluster as an interger
+	 * if the class is enumerated, otherwise the predicted value
+	 * @throws Exception if instance could not be classified
+	 * successfully
+	 */
+	@Override
+	public int clusterInstance(Instance instance) throws Exception {
+		return 0;
+	}
+
+	/**
+	 * Returns the tip text for this property
+	 * @return tip text for this property suitable for
+	 * displaying in the explorer/experimenter gui
+	 */
+	public String numClustersTipText() {
+		return "set number of clusters";
+	}
+
+	/**
+	 * set the number of clusters to generate
+	 *
+	 * @param n the number of clusters to generate
+	 * @throws Exception if number of clusters is negative
+	 */
+	public void setNumClusters(int n) throws Exception {
+		if (n <= 0) {
+			throw new Exception("Number of clusters must be > 0");
+		}
+		m_NumClusters = n;
+	}
+
+	/**
+	 * gets the number of clusters to generate
+	 *
+	 * @return the number of clusters to generate
+	 */
+	public int getNumClusters() {
+		return m_NumClusters;
+	}
+
+  	public String repObjTipText() {
+  		return "Number of representetive objects.";  		
+  	}
+  
+	public int getRepObj() {
+		return m_RepObj;
+	}
+	
+	public void setRepObj(int m_RepObj) {
+		this.m_RepObj = m_RepObj;
+	}
+	
+	public String colFactorTipText() {
+		return "Collapse factor (alpha).";
+	}
+	
+	public double getColFactor() {
+		return m_ColFactor;
+	}
+	
+	public void setColFactor(double m_ColFactor) {
+		this.m_ColFactor = m_ColFactor;
+	}
+
+/**
    * Returns the tip text for this property.
    *
    * @return 		tip text for this property suitable for
