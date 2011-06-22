@@ -106,8 +106,6 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 			
 			for(int i = 0; i < clusters.size(); i++) {
 				for(int j = i + 1; j < clusters.size(); j++) {
-					System.out.println("i: " + i + " " + clusters.get(i));
-					System.out.println("j: " + j + " " + clusters.get(j));
 					double dist = clusters.get(i).distance(clusters.get(j));
 					if(dist < min) {
 						mergeInd1 = i;
