@@ -96,7 +96,8 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 		instances = Filter.useFilter(instances, m_ReplaceMissingFilter);
 
 		for(int i = 0; i < data.numInstances(); i++) {
-			clusters.add(new Cluster(new Instances(data, i, i), m_RepObj, m_ColFactor));
+			Instances instance = new Instances(data, i, 1);
+			clusters.add(new Cluster(instance, m_RepObj, m_ColFactor));
 		}
 		
 		for(;m_NumClusters < clusters.size();) {
@@ -106,6 +107,8 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 			
 			for(int i = 0; i < clusters.size(); i++) {
 				for(int j = i + 1; j < clusters.size(); j++) {
+					System.out.println("i: " + i + " " + clusters.get(i));
+					System.out.println("j: " + j + " " + clusters.get(j));
 					double dist = clusters.get(i).distance(clusters.get(j));
 					if(dist < min) {
 						mergeInd1 = i;
