@@ -225,11 +225,6 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
    * @throws Exception if instances cannot be processed
    */
   public void setDistanceFunction(DistanceFunction df) throws Exception {
-    if(!(df instanceof EuclideanDistance) &&
-       !(df instanceof ManhattanDistance))
-      {
-        throw new Exception("Greda.");
-      }
     m_DistanceFunction = df;
   }
 
@@ -347,10 +342,10 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	  String returnString = "";
 	  
 	  int i;
-	  for(i = 0; i < clusters.size() - 1; i++) {
-		  returnString += clusters.get(i).toString() + ",";
+	  for(i = 0; i < clusters.size(); i++) {
+		  returnString += "Cluster: " + i + "\n";
+		  returnString += clusters.get(i).toString(0);
 	  }
-	  returnString += clusters.get(i).toString();
 	  
 	  returnString += "\n\n";
 	  
