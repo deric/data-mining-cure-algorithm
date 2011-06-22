@@ -185,7 +185,7 @@ public class Cluster implements Serializable{
 	private Instances getRepPoints() {
 		//if(repPoints != null) return repPoints;
 
-		repPoints = new Instances(points, repPointNum);
+		repPoints = new Instances(points);
 		
 		Instance prevPoint = findCentroid();
 		Set<Integer> usedInd = new HashSet<Integer>();
