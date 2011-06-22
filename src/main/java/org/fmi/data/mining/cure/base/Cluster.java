@@ -28,7 +28,7 @@ public class Cluster implements Serializable{
 	private Cluster leftParent;
 	private Cluster rightParent;
 	
-	protected DistanceFunction distanceFunction = new EuclideanDistance();
+	protected DistanceFunction distanceFunction;
 	
 	private int repPointNum = 5;
 	
@@ -39,9 +39,9 @@ public class Cluster implements Serializable{
 	 */
 	private Instances points;
 	
-	private Instances repPoints;
-	
-	private Instances colRepPoints;
+//	private Instances repPoints;
+//	
+//	private Instances colRepPoints;
 	
 	public Cluster getLeftChild() {
 		return leftParent;
@@ -70,12 +70,13 @@ public class Cluster implements Serializable{
 	 * @param points
 	 * 				The points in the cluster.
 	 */
-	public Cluster(Instances points, int repPointNum, double alpha, Instances in) {
+	public Cluster(Instances points, int repPointNum, double alpha, Instances in, DistanceFunction distanceFunction) {
+		this.distanceFunction = distanceFunction;
 		this.distanceFunction.setInstances(in);
 		this.repPointNum = repPointNum;
 		this.alpha = alpha;
 		this.points = new Instances(points);
-		repPoints = new Instances(points, repPointNum);
+//		repPoints = new Instances(points, repPointNum);
 	}
 	
 //	@Override
@@ -185,7 +186,7 @@ public class Cluster implements Serializable{
 	private Instances getRepPoints() {
 		//if(repPoints != null) return repPoints;
 
-		repPoints = new Instances(points);
+		Instances repPoints = new Instances(points);
 		
 		Instance prevPoint = findCentroid();
 		Set<Integer> usedInd = new HashSet<Integer>();
@@ -276,7 +277,7 @@ public class Cluster implements Serializable{
 		Instances repPoints = getRepPoints();
 		Instance centroid = findCentroid();
 		
-		colRepPoints = new Instances(repPoints);
+		Instances colRepPoints = new Instances(repPoints);
 		
 		for(int i = 0; i < repPoints.numInstances(); i++) {
 			Instance curInstance = colRepPoints.get(i);
@@ -304,7 +305,7 @@ public class Cluster implements Serializable{
 	public Cluster merge(Cluster cluster) {
 		Instances mergedInstances = new Instances(points);
 		mergedInstances.addAll(cluster.points);
-		Cluster newCluster = new Cluster(mergedInstances, repPointNum, alpha, distanceFunction.getInstances());
+		Cluster newCluster = new Cluster(mergedInstances, repPointNum, alpha, distanceFunction.getInstances(), distanceFunction);
 		
 		return newCluster;
 	}

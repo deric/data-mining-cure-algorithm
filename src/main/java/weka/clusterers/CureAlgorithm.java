@@ -105,9 +105,11 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 		m_ReplaceMissingFilter.setInputFormat(instances);
 		instances = Filter.useFilter(instances, m_ReplaceMissingFilter);
 
+		data = instances;
+		
 		for(int i = 0; i < data.numInstances(); i++) {
 			Instances instance = new Instances(data, i, 1);
-			clusters.add(new Cluster(instance, m_RepObj, m_ColFactor, m_DistanceFunction.getInstances()));
+			clusters.add(new Cluster(instance, m_RepObj, m_ColFactor, m_DistanceFunction.getInstances(), m_DistanceFunction));
 		}
 		
 		for(;m_NumClusters < clusters.size();) {
@@ -154,7 +156,7 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 		Instance inst = m_ReplaceMissingFilter.output();
 
 		for(int i = 0; i < clusters.size(); i++) {
-			if(clusters.get(i).contains(instance)) return i;
+			if(clusters.get(i).contains(inst)) return i;
 		}
 		
 		throw new Exception("Cannot");
