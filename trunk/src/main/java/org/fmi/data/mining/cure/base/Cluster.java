@@ -5,6 +5,12 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
+import weka.core.DistanceFunction;
+import weka.core.EuclideanDistance;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.core.SparseInstance;
+
 
 /**
  *	Represents the idea of the cluster in the algorithm.
@@ -14,12 +20,46 @@ import java.util.Vector;
  * @param <T>
  * The type of the points given.
  */
-public class Cluster implements Iterable<Point>{
-
+public class Cluster{
+	
+	private Cluster leftParent;
+	private Cluster rightParent;
+	
+	protected DistanceFunction distanceFunction = new EuclideanDistance();
+	
+	private int repPointNum = 5;
+	
+	private double alpha = 0.1;
+	
 	/**
 	 * The points in the cluster.
 	 */
-	private Set<Point> points;
+	private Instances points;
+	
+	private Instances repPoints;
+	
+	private Instances colRepPoints;
+	
+	public Cluster getLeftChild() {
+		return leftParent;
+	}
+
+	public Cluster getRightChild() {
+		return rightParent;
+	}
+
+//	/**
+//	 * Constructor of the class.
+//	 * 
+//	 * @param points
+//	 * 				The points in the cluster.
+//	 */
+//	public Cluster(Point...points) {
+//		this.points = new HashSet<Point>();
+//		for (Point point : points) {
+//			this.points.add(point);
+//		}
+//	}
 	
 	/**
 	 * Constructor of the class.
@@ -27,27 +67,16 @@ public class Cluster implements Iterable<Point>{
 	 * @param points
 	 * 				The points in the cluster.
 	 */
-	public Cluster(Point...points) {
-		this.points = new HashSet<Point>();
-		for (Point point : points) {
-			this.points.add(point);
-		}
+	public Cluster(Instances points, int repPointNum, double alpha) {
+		this.repPointNum = repPointNum;
+		this.alpha = alpha;
+		this.points = new Instances(points);
 	}
 	
-	/**
-	 * Constructor of the class.
-	 * 
-	 * @param points
-	 * 				The points in the cluster.
-	 */
-	public Cluster(Set<Point> points) {
-		this.points = new HashSet<Point>(points);
-	}
-	
-	@Override
-	public Iterator<Point> iterator() {
-		return points.iterator();
-	}
+//	@Override
+//	public Iterator<Point> iterator() {
+//		return points.iterator();
+//	}
 	
 	/**
 	 * The size of the cluster - the number of the points in it.
@@ -56,20 +85,20 @@ public class Cluster implements Iterable<Point>{
 	 * 			The number of the points in the cluster.
 	 */
 	public int getSize() {
-		return this.points.size();
+		return this.points.numInstances();
 	}
 	
-	/**
-	 * Adds a point to the given cluster.
-	 * 
-	 * @param point
-	 * 				The point to be addes.
-	 */
-	public void addPoint(Point point) {
-		this.points.add(point);
-		
-		centroidDirty = true;
-	}
+//	/**
+//	 * Adds a point to the given cluster.
+//	 * 
+//	 * @param point
+//	 * 				The point to be addes.
+//	 */
+//	public void addPoint(Point point) {
+//		this.points.add(point);
+//		
+//		centroidDirty = true;
+//	}
 	
 	/**
 	 * Finds the distance between two the cluster and another one.
@@ -79,12 +108,18 @@ public class Cluster implements Iterable<Point>{
 	 * @return
 	 * 					The distance between the clusters.
 	 */
-	//very dummy!!!!!!!!!!!!!!!!
 	public double distance(Cluster cluster) {
+		Instances colRepPointsThis = getColRepPoints();
+		Instances colRepPointsOther = cluster.getColRepPoints();
+		
 		double min = Double.POSITIVE_INFINITY;
-		for (Point point1 : cluster) {
-			for (Point point2 : this) {
-				double distance = point1.distance(point2);
+		Instance point1;
+		for (int i = 0; i < colRepPointsThis.numInstances(); i++) {
+			point1 = colRepPointsThis.get(i);
+			Instance point2;
+			for (int j = 0; j < colRepPointsOther.numInstances(); j++) {
+				point2 = colRepPointsOther.get(j);
+				double distance = distanceFunction.distance(point1, point2);
 				if (min > distance) {
 					min = distance;
 				}
@@ -93,133 +128,162 @@ public class Cluster implements Iterable<Point>{
 		return min;
 	}
 	
-	/**
-	 * shows if the centroid needs to be recalculated
-	 */
-	private boolean centroidDirty = true;
+
 	/**
 	 * holds the centroid point
 	 */
-	private Point centroid;
+	private Instance centroid = null;
 	/**
 	 * Finds the centroid of the cluster.
 	 * 
 	 * @return
 	 * 			The centroid of the cluster.
 	 */
-	private Point findCentroid() {
+	private Instance findCentroid() {
+		double [] attrs = new double[points.numAttributes()];
 		
-		if (!centroidDirty)
-			return centroid;
+		if (centroid != null) return centroid;
 		
-		Point result = new Point();
-//		for (Point point : this) {
-//			if (result.getCoordinates() == null)
+		for(int i = 0; i < points.numAttributes(); i++) {
+			attrs[i] = points.meanOrMode(i);
+		}
+		centroid = new SparseInstance(1, attrs);
+		centroid.setDataset(points);
+		
+		return centroid;
+	}
+	
+//	/**
+//	 * Finds the representative points of the cluster.
+//	 * 
+//	 * @return
+//	 * 			A new cluster consisting of the 
+//	 * 			representatives of the current one.
+//	 */
+//	public Cluster findRepresentatives() {
+//		int representativesCount = (int) (this.getSize()*representativesPercent/100);
+//		representativesCount = (representativesCount > 1) ? representativesCount : 1;
+//		
+//		Cluster result = new Cluster();
+//		
+//		findCentroid();
+//		Point point = findTheMostDistantPointFrom(centroid, this, result);
+//		result.addPoint(point);
+//		while (result.points.size() < representativesCount)
+//		{
+//			point = findTheMostDistantPointFrom(point, this, result);
+//			result.addPoint(point);
+//		}
+//		return result;
+//	}
+	
+	private Instances getRepPoints() {
+		if(repPoints != null) return repPoints;
+
+		repPoints = new Instances(points, repPointNum);
+		
+		Instance prevPoint = findCentroid();
+		Set<Integer> usedInd = new HashSet<Integer>();
+		for(int i = 0; i < repPointNum; i++) {
+			double maxDistance = -1;
+			int distInstanceInd = 0;
+			for(int j = 0; j < points.numInstances(); j++) {
+				Instance curInstance = points.get(j);
+				double curDistance = distanceFunction.distance(prevPoint, curInstance);
+				if(curDistance > maxDistance && !usedInd.contains(j)) {
+					distInstanceInd = j;
+					maxDistance = curDistance;
+				}
+			}
+			repPoints.set(i, points.get(distInstanceInd));
+			usedInd.add(distInstanceInd);
+			prevPoint = points.get(distInstanceInd);
+		}
+		
+		return repPoints;
+	}
+	
+//	/**
+//	 * Finds the the most distant point from a cluster
+//	 * to a given point. And excludes the points which
+//	 * are present in the second cluster
+//	 * 
+//	 * @param point
+//	 * 				The seed point
+//	 * @param inCluster
+//	 * 					The other cluster to search from
+//	 * @param notInCluster
+//	 * 					The exclusive cluster which 
+//	 * 					contains the points which we should 
+//	 * 					avoid
+//	 * @return
+//	 * 			A point which is most distant from 
+//	 * 			the seed point
+//	 */
+//	public Point findTheMostDistantPointFrom(Point point, Cluster inCluster, Cluster notInCluster) 
+//	{
+//		Point result = point;
+//		double distance;
+//		double maxDistance = 0;
+//		for (Point testPoint : inCluster)
+//		{
+//			if (!notInCluster.points.contains(testPoint))
 //			{
-//				result.setCoordinates((Vector<Double>) point.getCoordinates().clone());
-//			}
-//			else
-//			{
-//				for(int i = 0; i < point.getCoordinates().size(); i++) 
+//				distance = testPoint.distance(point);
+//				if (distance > maxDistance)
 //				{
-//					double coordinate = point.getCoordinate(i);
-//					result.setCoordinate(i, point.getCoordinate(i) + coordinate);
+//					result = testPoint;
 //				}
 //			}
 //		}
-//		for(int i = 0; i < result.getCoordinates().size(); i++) 
-//		{
-//			result.setCoordinate(i, result.getCoordinate(i)/this.getSize());
+//		return result;
+//	}
+	
+//	/**
+//	 * Moves the cluster with the given alpha distance.
+//	 * 
+//	 * @param alpha
+//	 * 			Fixed parameter.
+//	 * @return
+//	 * 			Another cluster, with points that are moved with alpha/
+//	 */
+//	public Cluster moveCluster(double alpha) {
+//		findCentroid();
+//		Cluster newCluster = new Cluster();
+//		for(Iterator<Point> itr = this.iterator(); itr.hasNext(); ) {
+//			Point pt = itr.next();
+//			int dim = pt.getDimension();
+//			Vector<Double> dirToCent = pt.directionTo(centroid);
+//			double distToCentr = pt.distance(centroid);
+//			Vector<Double> moveVector = new Vector<Double>(); 
+//			for(int i = 0; i < dim; i++) {
+//				moveVector.add(distToCentr * alpha * dirToCent.get(i));
+//			}
+//			newCluster.addPoint(pt.move(moveVector));
 //		}
-		result.calculateAsMeanOf(points);
-		centroid = result;
-		return result;
-	}
+//		return newCluster;
+//	}
 	
-	private double representativesPercent = 5;
-	/**
-	 * Finds the representative points of the cluster.
-	 * 
-	 * @return
-	 * 			A new cluster consisting of the 
-	 * 			representatives of the current one.
-	 */
-	public Cluster findRepresentatives() {
-		int representativesCount = (int) (this.getSize()*representativesPercent/100);
-		representativesCount = (representativesCount > 1) ? representativesCount : 1;
+	private Instances getColRepPoints() {
+		if(colRepPoints != null) return colRepPoints;
 		
-		Cluster result = new Cluster();
+		colRepPoints = new Instances(repPoints);
 		
-		findCentroid();
-		Point point = findTheMostDistantPointFrom(centroid, this, result);
-		result.addPoint(point);
-		while (result.points.size() < representativesCount)
-		{
-			point = findTheMostDistantPointFrom(point, this, result);
-			result.addPoint(point);
-		}
-		return result;
-	}
-	
-	/**
-	 * Finds the the most distant point from a cluster
-	 * to a given point. And excludes the points which
-	 * are present in the second cluster
-	 * 
-	 * @param point
-	 * 				The seed point
-	 * @param inCluster
-	 * 					The other cluster to search from
-	 * @param notInCluster
-	 * 					The exclusive cluster which 
-	 * 					contains the points which we should 
-	 * 					avoid
-	 * @return
-	 * 			A point which is most distant from 
-	 * 			the seed point
-	 */
-	public Point findTheMostDistantPointFrom(Point point, Cluster inCluster, Cluster notInCluster) 
-	{
-		Point result = point;
-		double distance;
-		double maxDistance = 0;
-		for (Point testPoint : inCluster)
-		{
-			if (!notInCluster.points.contains(testPoint))
-			{
-				distance = testPoint.distance(point);
-				if (distance > maxDistance)
-				{
-					result = testPoint;
-				}
+		Instances repPoints = getRepPoints();
+		Instance centroid = findCentroid();
+		
+		for(int i = 0; i < repPoints.numInstances(); i++) {
+			Instance curInstance = colRepPoints.get(i);
+			double distToCenter = distanceFunction.distance(curInstance, centroid);
+			for(int j = 0; j < curInstance.numAttributes(); j++) {
+				double curVal = curInstance.value(j);
+				double centrVal = centroid.value(j);
+				double newVal = curVal + alpha * distToCenter * (curVal > centrVal ? -1 : 1);
+				curInstance.setValue(j, newVal);
 			}
 		}
-		return result;
-	}
-	
-	/**
-	 * Moves the cluster with the given alpha distance.
-	 * 
-	 * @param alpha
-	 * 			Fixed parameter.
-	 * @return
-	 * 			Another cluster, with points that are moved with alpha/
-	 */
-	public Cluster moveCluster(double alpha) {
-		findCentroid();
-		Cluster newCluster = new Cluster();
-		for(Iterator<Point> itr = this.iterator(); itr.hasNext(); ) {
-			Point pt = itr.next();
-			int dim = pt.getDimension();
-			Vector<Double> dirToCent = pt.directionTo(centroid);
-			double distToCentr = pt.distance(centroid);
-			Vector<Double> moveVector = new Vector<Double>(); 
-			for(int i = 0; i < dim; i++) {
-				moveVector.add(distToCentr * alpha * dirToCent.get(i));
-			}
-			newCluster.addPoint(pt.move(moveVector));
-		}
-		return newCluster;
+		
+		return colRepPoints;
 	}
 	
 	/**
@@ -232,11 +296,39 @@ public class Cluster implements Iterable<Point>{
 	 * 					in the current cluster plus the ones in the other cluster.
 	 */
 	public Cluster merge(Cluster cluster) {
-		Set<Point> mergedPoints = new HashSet<Point>();
-		mergedPoints.addAll(cluster.points);
-		mergedPoints.addAll(this.points);
-		return new Cluster(mergedPoints);
+		Instances mergedInstances = new Instances(points);
+		mergedInstances.addAll(cluster.points);
+		Cluster newCluster = new Cluster(mergedInstances, repPointNum, alpha);
+		
+		return newCluster;
 	}
+	
+	public boolean Contains(Instance inst) {		
+		for(int i = 0; i < points.numInstances(); i++) {
+			if(distanceFunction.distance(points.instance(i), inst) == 0) return true;			
+		}
+		
+		return false;
+	}
+	
+	public String toString() {
+		String returnString = "(";
+		
+		centroid = findCentroid();
+		
+		int i;
+		for(i = 0; i < centroid.numAttributes() - 1; i++) {
+			returnString += centroid.value(i) + ",";
+		}
+		returnString += centroid.value(i);
+		if(leftParent != null) returnString += leftParent.toString();
+		if(rightParent != null) returnString += rightParent.toString();
+		returnString += ")";
+		
+		return returnString;
+	}
+	
+	
 	
 	@Override
 	public boolean equals(Object obj) {
