@@ -135,6 +135,22 @@ public class Cluster implements Serializable{
 		return min;
 	}
 	
+	
+	public double distance(Instance instance) {
+		Instances colRepPointsOther = getColRepPoints();
+		
+		double min = Double.POSITIVE_INFINITY;
+		for(int i = 0; i < colRepPointsOther.numInstances(); i++) {
+			double distance = distanceFunction.distance(colRepPointsOther.get(i), instance);
+			
+			if(min > distance) {
+				min = distance;
+			}
+		}
+		
+		return min;
+	}
+	
 
 	/**
 	 * Finds the centroid of the cluster.
