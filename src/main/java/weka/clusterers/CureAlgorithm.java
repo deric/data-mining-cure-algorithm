@@ -42,6 +42,8 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	private Instances m_instances;
 
 	private double m_ColFactor = 0.1;
+	
+	private boolean m_ClassifyOnlyInput = true;
 
 	/** the distance function used. */
 	protected DistanceFunction m_DistanceFunction = new EuclideanDistance();
@@ -76,7 +78,6 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 		result.enable(Capability.NO_CLASS);
 
 		// attributes
-		result.enable(Capability.NOMINAL_ATTRIBUTES);
 		result.enable(Capability.NUMERIC_ATTRIBUTES);
 		result.enable(Capability.MISSING_VALUES);
 
@@ -136,12 +137,26 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	@Override
 	public int clusterInstance(Instance instance) throws Exception {
 
-		for(int i = 0; i < clusters.size(); i++) {
-			if(clusters.get(i).contains(instance)) return i;
+		if(m_ClassifyOnlyInput) {
+			for(int i = 0; i < clusters.size(); i++) {
+				if(clusters.get(i).contains(instance)) return i;
+			}
+			
+			Exception up = new Exception("Cannot");
+			throw up;
 		}
-		
-		Exception up = new Exception("Cannot");
-		throw up;
+		else {
+			double min = Double.POSITIVE_INFINITY;
+			int closestClusterInd = 0;
+			for(int i = 0; i < clusters.size(); i++) {
+				double distance = clusters.get(i).distance(instance);
+				if(distance < min) {
+					closestClusterInd = i;
+					min = distance;
+				}
+			}
+			return closestClusterInd;
+		}
 	}
 
 	/**
@@ -229,7 +244,20 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
     m_DistanceFunction = df;
   }
 
-  /**
+  public String classifyOnlyInputTipText() {
+	  return "If true than an instance will be classified to a given cluster" +
+	  	"only if it is identical to an instance in the input data.";
+  }
+  
+  public boolean getClassifyOnlyInput() {
+	  return m_ClassifyOnlyInput;
+  }
+
+  public void setClassifyOnlyInput(boolean m_ClassOnlyInput) {
+	  this.m_ClassifyOnlyInput = m_ClassOnlyInput;
+  }
+
+/**
    * Returns the number of clusters.
    *
    * @return the number of clusters generated for a training dataset.
@@ -253,12 +281,17 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
     
     result.addElement(new Option(
             "\tCollapse factor.\n",
-            "C", 1, "-C"));
-
+            "C", 1, "-C"));    
+    
     result.add(new Option(
                           "\tDistance function to use.\n"
                           + "\t(default: weka.core.EuclideanDistance)",
                           "A", 1,"-A <classname and options>"));
+    
+    result.add(new Option(
+            "\tClassify only input.\n"
+            + "\t(default: true)",
+            "O", 0,"-O"));
 
 
     return  result.elements();
@@ -302,6 +335,8 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
     else {
       setDistanceFunction(new EuclideanDistance());
     }
+    
+    m_ClassifyOnlyInput = Utils.getFlag("O", options);
 
   }
 
@@ -330,6 +365,8 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
     result.add((m_DistanceFunction.getClass().getName() + " " +
                 Utils.joinOptions(m_DistanceFunction.getOptions())).trim());
 
+    if(m_ClassifyOnlyInput) result.add("-O");
+    
     return (String[]) result.toArray(new String[result.size()]);
   }
 
