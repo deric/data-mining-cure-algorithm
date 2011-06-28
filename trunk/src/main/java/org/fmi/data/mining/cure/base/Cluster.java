@@ -202,10 +202,10 @@ public class Cluster implements Serializable{
 		repPoints = new Instances(points);
 		
 		repPoints.clear();
-		System.out.println("preparing rep point number: " + 
-				repPoints.numInstances() + 
-				" repPoints.size(): " + 
-				repPoints.size() + "requested: " + repPointNum);
+//		System.out.println("preparing rep point number: " + 
+//				repPoints.numInstances() + 
+//				" repPoints.size(): " + 
+//				repPoints.size() + "requested: " + repPointNum);
 		
 		Instance prevPoint = findCentroid();
 		Set<Integer> usedInd = new HashSet<Integer>();
@@ -229,10 +229,10 @@ public class Cluster implements Serializable{
 			prevPoint = points.get(distInstanceInd);
 		}
 		
-		System.out.println("finnished with rep point number: " + 
-				repPoints.numInstances() + 
-				" repPoints.size(): " + 
-				repPoints.size() + "requested: " + repPointNum);
+//		System.out.println("finnished with rep point number: " + 
+//				repPoints.numInstances() + 
+//				" repPoints.size(): " + 
+//				repPoints.size() + "requested: " + repPointNum);
 		
 		return repPoints;
 	}
@@ -351,10 +351,10 @@ public class Cluster implements Serializable{
 	
 	public boolean isRepPoint(Instance inst) {
 		Instances repPoints = getRepPoints();
-		System.out.println("num rep points: " + repPoints.numInstances());
+//		System.out.println("num rep points: " + repPoints.numInstances());
 		for(int i = 0; i < repPoints.numInstances(); i++) {
 			if(distanceFunction.distance(repPoints.instance(i), inst) <= 0) {
-				System.out.println("Num rep selected: " + i);
+//				System.out.println("Num rep selected: " + i);
 				return true;			
 			}
 		}
