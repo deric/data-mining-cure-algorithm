@@ -44,6 +44,8 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	private double m_ColFactor = 0.1;
 	
 	private boolean m_ClassifyOnlyInput = true;
+	
+	private boolean m_SeparateRepPoints = true;
 
 	/** the distance function used. */
 	protected DistanceFunction m_DistanceFunction = new EuclideanDistance();
@@ -137,6 +139,15 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	@Override
 	public int clusterInstance(Instance instance) throws Exception {
 
+		if(m_SeparateRepPoints) {
+			for(int i = 0; i < clusters.size(); i++) {
+				if(clusters.get(i).isRepPoint(instance)) {
+//					System.out.println("Cluster: " + i);
+					return clusters.size(); //number after the last cluster
+				}
+			}
+		}
+		
 		if(m_ClassifyOnlyInput) {
 			for(int i = 0; i < clusters.size(); i++) {
 				if(clusters.get(i).contains(instance)) return i;
@@ -257,6 +268,18 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 	  this.m_ClassifyOnlyInput = m_ClassOnlyInput;
   }
 
+  public String separateRepPointsTipText() {
+	  return "Classify representative points in a seperate cluster so that they are clearly visible";
+  }
+  
+  public boolean getSeparateRepPoints() {
+	  return m_SeparateRepPoints;
+  }
+
+  public void setSeparateRepPoints(boolean m_SeparateRepPoints) {
+	  this.m_SeparateRepPoints = m_SeparateRepPoints;
+  }
+
 /**
    * Returns the number of clusters.
    *
@@ -265,7 +288,7 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
    * successfully
    */
   public int numberOfClusters() throws Exception {
-    return m_NumClusters;
+    return m_NumClusters + (m_SeparateRepPoints ? 1 : 0);
   }
 
   public Enumeration listOptions () {
@@ -337,6 +360,8 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
     }
     
     m_ClassifyOnlyInput = Utils.getFlag("O", options);
+    
+    m_SeparateRepPoints = Utils.getFlag("P", options);
 
   }
 
@@ -366,6 +391,8 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
                 Utils.joinOptions(m_DistanceFunction.getOptions())).trim());
 
     if(m_ClassifyOnlyInput) result.add("-O");
+    
+    if(m_SeparateRepPoints) result.add("-P");
     
     return (String[]) result.toArray(new String[result.size()]);
   }
