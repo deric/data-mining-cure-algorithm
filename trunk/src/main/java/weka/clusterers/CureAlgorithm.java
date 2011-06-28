@@ -143,14 +143,14 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 			for(int i = 0; i < clusters.size(); i++) {
 				if(clusters.get(i).isRepPoint(instance)) {
 //					System.out.println("Cluster: " + i);
-					return clusters.size(); //number after the last cluster
+					return i * 2 + 1; //number after the last cluster
 				}
 			}
 		}
 		
 		if(m_ClassifyOnlyInput) {
 			for(int i = 0; i < clusters.size(); i++) {
-				if(clusters.get(i).contains(instance)) return i;
+				if(clusters.get(i).contains(instance)) return i * (m_SeparateRepPoints ? 2 : 1);
 			}
 			
 			Exception up = new Exception("Cannot");
@@ -166,7 +166,7 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
 					min = distance;
 				}
 			}
-			return closestClusterInd;
+			return closestClusterInd * (m_SeparateRepPoints ? 2 : 1);
 		}
 	}
 
@@ -288,7 +288,7 @@ implements OptionHandler, NumberOfClustersRequestable, WeightedInstancesHandler 
    * successfully
    */
   public int numberOfClusters() throws Exception {
-    return m_NumClusters + (m_SeparateRepPoints ? 1 : 0);
+    return clusters.size() * (m_SeparateRepPoints ? 2 : 1);
   }
 
   public Enumeration listOptions () {
