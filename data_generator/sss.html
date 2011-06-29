@@ -1,0 +1,23 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title></title>
+<script type="text/javascript">
+function SetValues()
+{
+    var s =  + window.event.clientX +  ' ,' + window.event.clientY ;
+	console.log(s);
+	var canvas = document.createElement("canvas");
+	canvas.setAttribute("width", window.innerWidth);
+	canvas.setAttribute("height", window.innerHeight);
+	canvas.setAttribute("style", "position: absolute; x:0; y:0;");
+	document.body.appendChild(canvas);
+	var ctx = canvas.getContext('2d');
+	ctx.fillRect(window.event.clientX,window.event.clientY,3,3); 
+	
+}  
+
+</script></head>
+<body onclick=SetValues()>
+
+</body></html>
